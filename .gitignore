@@ -1,4 +1,5 @@
 **/*.ipynb_checkpoints/
 onpoli/data/*
 metoo/data/*
-🫡/data/*
+🫡/data/**
+ifr/data/*
