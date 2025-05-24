@@ -5,7 +5,7 @@ import io.archivesunleashed.udfs._
 
 // Data and Results.
 val warcs = "/home/nruest/Projects/digfemcan/evie/warcs/*"
-val results = "/home/nruest/Projects/digfemcan/evie/results/20250520/"
+val results = "/home/nruest/Projects/digfemcan/evie/results/20250620/"
 
 // Load and filter data.
 val webpages = RecordLoader.loadArchives(warcs, sc).webpages()
@@ -35,14 +35,17 @@ val monthNum: UserDefinedFunction = udf((month: String) => {
 })
 
 // Author, publication date, and read time regexes.
-val authorRegex = """(?i)(?:By|Written by)\s+([A-Z][\p{L}'\-]*(?:\s+[A-Z][\p{L}'\-]*)*)(?=\s?\d*\s*(?:min\s+read)?\s*(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b)"""
+val authorRegex =
+  """(?i)(?:By|Written by)\s+((?:[A-Z]\.){1,3}(?:\s+[A-Z][\p{L}'\-]*)*|(?:Dr\.)\s+(?:[A-Z][\p{L}'\-]*\s*)+|(?:[A-Z][\p{L}'\-]*(?:\s+(?:&|and)\s+[A-Z][\p{L}'\-]*|\s+[A-Z][\p{L}'\-]*)*))(?=\d*\s*(?:min\s+read)?\s*(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b)"""
+
 val publicationDateRegex =
   """(?i)(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2})(?:st|nd|rd|th)?[,\s]+(\d{4})"""
+
 val readTimeRegex = "(\\d+) min"
 
 // Extract Author, Publication Date, and Read Time.
 val enriched = articlesWithTitle
-  .withColumn("author", regexp_extract($"content", authorRegex, 1))
+  .withColumn("author", trim(regexp_extract($"content", authorRegex, 1)))
   .withColumn("pub_month", regexp_extract($"content", publicationDateRegex, 1))
   .withColumn("pub_day", lpad(regexp_extract($"content", publicationDateRegex, 2), 2, "0"))
   .withColumn("pub_year", regexp_extract($"content", publicationDateRegex, 3))
